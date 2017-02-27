@@ -101,7 +101,7 @@ def svcRadianKerTest(lC, lGamma, X_tr, X_lt, y_tr, y_lt):
     svc.fit(X_tr, y_tr)
     zs=svc.predict_proba(X_lt)
     print "Rad: "+str(logloss(y_lt,zs[:,1]))
-def svcRadianKerRes(lC, lGamma, X_tr, X_lt, y_tr):
+def svcRadianKerRes(lC, lGamma, X_train, X_test, y_train):
     svc = SVC(kernel='rbf', C=lC, gamma=lGamma, probability=True)
     svc.fit(X_train, y_train)
     zS=svc.predict_proba(X_test)
@@ -115,7 +115,7 @@ def main():
     X_tr, X_lt, y_tr, y_lt = makeLocalData(X_train, y_train)
     randomForestTest(100, 22, X_tr, X_lt, y_tr, y_lt)
     gboostTest(100, 22, X_tr, X_lt, y_tr, y_lt)
-    svcRadianKerTest(100.0, 0.01, X_tr, X_lt, y_tr, y_lt)
+    asvcRadianKerTest(100.0, 0.01, X_tr, X_lt, y_tr, y_lt)
     randomForestRes(100, 22, X_train, X_test, y_train)
     gboostRes(100, 22,  X_train, X_test, y_train)
     svcRadianKerRes(100.0, 0.01, X_train, X_test, y_train)
