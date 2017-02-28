@@ -35,7 +35,7 @@ def makeLocalData(X_train, y_train):
 
 #RANDOM FOREST BEGIN
 def randomForestSearchParam(X_train, y_train):
-    estim_array = [i for i in range(100, 200, 10)]
+    estim_array = [i for i in range(100, 200, 15)]
     rndst_array = [i for i in range(7, 30, 4)]
     rfc = ensemble.RandomForestClassifier()
     grid = GridSearchCV(rfc, param_grid={'n_estimators': estim_array, 'random_state': rndst_array}, scoring='neg_log_loss')
@@ -186,18 +186,18 @@ def main():
     X_train, X_test = normalizeData(X_train, X_test)
     X_tr, X_lt, y_tr, y_lt = makeLocalData(X_train, y_train)
     bestneRnd, bestrsRnd = 175, 22
-    #bestneRnd, bestrsRnd = randomForestSearchParam(X_train, y_train)
+    bestneRnd, bestrsRnd = randomForestSearchParam(X_train, y_train)
     bestneGB, bestrsGB = 100, 16
-    #bestneGB, bestrsGB = gboostSearchParam(X_train, y_train)
+    bestneGB, bestrsGB = gboostSearchParam(X_train, y_train)
     bestC, bestG = 100.0, 0.001
-    #bestC, bestG = svcRadianKerSearchParam(X_train, y_train)
+    bestC, bestG = svcRadianKerSearchParam(X_train, y_train)
     zRnd = randomForestTest(bestneRnd, bestrsRnd, X_tr, X_lt, y_tr, y_lt)
     zGb = gboostTest(bestneGB, bestrsGB, X_tr, X_lt, y_tr, y_lt)
     zSvc = svcRadianKerTest(bestC, bestG, X_tr, X_lt, y_tr, y_lt)
     zXgb = xgboostTest(X_tr, X_lt, y_tr, y_lt, {})
     zRND = randomForestRes(bestneRnd, bestrsRnd, X_train, X_test, y_train)
     zGB = gboostRes(bestneGB, bestrsGB,  X_train, X_test, y_train)
-    #zSVC = svcRadianKerRes(bestC, bestG, X_train, X_test, y_train)
+    zSVC = svcRadianKerRes(bestC, bestG, X_train, X_test, y_train)
     zXGB = xgboostRes(X_train, X_test, y_train, {}) 
     GBXGBTest(zGb, zXgb, y_lt)
     GBXGBRes(zGB, zXGB)
@@ -209,13 +209,3 @@ def main():
     RNDGBXGBRKRes(zRND, zGB, zXGB, zSVC)
 
 main()
-
-'''
-for i in range(len(zr)):
-    zr[i,1]=(zb[i,1]+zs[i,1])/2.
-print log_loss(y_test, zr[:,1])
-y_res=open('y_test.csv','w')
-for i in range(len(zR)):
-    zR[i,1]=(zB[i,1]+zS[i,1])/2.
-y_res.write('\n'.join(str(v[1]) for v in zR))
-'''
