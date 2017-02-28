@@ -202,8 +202,11 @@ def main():
     GBXGBTest(zGb, zXgb, y_lt)
     GBXGBRes(zGB, zXGB)
     GBXGBRKTest(zGb, zXgb, zSvc, y_lt) 
+    GBXGBRKRes(zGB, zXGB, zSVC) 
     RNDGBXGBTest(zRnd, zGb, zXgb, y_lt)
+    RNDGBXGBRes(zRND, zGB, zXGB)
     RNDGBXGBRKTest(zRnd, zGb, zXgb, zSvc, y_lt)
+    RNDGBXGBRKRes(zRND, zGB, zXGB, zSVC)
 
 main()
 
