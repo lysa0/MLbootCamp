@@ -36,7 +36,7 @@ def randomForestSearchParam(X_train, y_train):
     estim_array = [i for i in range(50, 200, 25)]
     rndst_array = [i for i in range(4, 30, 3)]
     rfc = ensemble.RandomForestClassifier()
-    grid = GridSearchCV(rfc, param_grid={'n_estimators': estim_array, 'random_state': rndst_array})
+    grid = GridSearchCV(rfc, param_grid={'n_estimators': estim_array, 'random_state': rndst_array}, scoring='neg_log_loss')
     grid.fit(X_train, y_train)
     print 'CV error    = ', 1 - grid.best_score_
     print 'best estim  = ', grid.best_estimator_.n_estimators
@@ -88,7 +88,7 @@ def svcRadianKerSearchParam(X_train, y_train):
     C_array = np.logspace(-3, 3, num=7)
     gamma_array = np.logspace(-5, 2, num=8)
     svc = SVC(kernel='rbf', probability=True)
-    grid = GridSearchCV(svc, param_grid={'C': C_array, 'gamma': gamma_array})
+    grid = GridSearchCV(svc, param_grid={'C': C_array, 'gamma': gamma_array}, scoring='neg_log_loss')
     grid.fit(X_train, y_train)
     print 'CV error    = ', 1 - grid.best_score_
     print 'best C      = ', grid.best_estimator_.C
@@ -114,11 +114,11 @@ def main():
     X_train, X_test = normalizeData(X_train, X_test)
     X_tr, X_lt, y_tr, y_lt = makeLocalData(X_train, y_train)
     bestneRnd, bestrsRnd = 100, 22
-    #bestneRnd, bestrsRnd = randomForestSearchParam(X_train, y_train)
+    bestneRnd, bestrsRnd = randomForestSearchParam(X_train, y_train)
     bestneGB, bestrsGB = 100, 13
-    #bestneGB, bestrsGB = randomForestSearchParam(X_train, y_train)
+    bestneGB, bestrsGB = gboostSearchParam(X_train, y_train)
     bestC, bestG = 100.0, 0.01
-    #bestC, bestG = svcRadianKerSearchParam(X_train, y_train)
+    bestC, bestG = svcRadianKerSearchParam(X_train, y_train)
     randomForestTest(bestneRnd, bestrsRnd, X_tr, X_lt, y_tr, y_lt)
     gboostTest(bestneGB, bestrsGB, X_tr, X_lt, y_tr, y_lt)
     svcRadianKerTest(bestC, bestG, X_tr, X_lt, y_tr, y_lt)
