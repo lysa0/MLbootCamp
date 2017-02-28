@@ -51,12 +51,14 @@ def randomForestTest(ne, rs, X_tr, X_lt, y_tr, y_lt):
     rf.fit(X_tr, y_tr)
     zr=rf.predict_proba(X_lt)
     print 'Rnd: '+str(log_loss(y_lt, zr[:,1]))
+    return zr[:,1]
 def randomForestRes(ne, rs, X_train, X_test, y_train):
     rf = ensemble.RandomForestClassifier(n_estimators=ne, random_state=rs)
     rf.fit(X_train, y_train)
     zR=rf.predict_proba(X_test)
     y_res=open('y_testRndFor.csv', 'w')
     y_res.write('\n'.join(str(v[1]) for v in zR))
+    return zR[:,1]
 #RANDOM FOREST END
 
 #GRADIENT BOOSTING BEGIN
@@ -77,12 +79,14 @@ def gboostTest(ne, rs, X_tr, X_lt, y_tr, y_lt):
     gbt.fit(X_tr, y_tr)
     zb=gbt.predict_proba(X_lt)
     print "Boost: "+str(log_loss(y_lt, zb[:,1]))
+    return zb[:,1]
 def gboostRes(ne, rs, X_train, X_test, y_train):
     gbt = ensemble.GradientBoostingClassifier(n_estimators=ne, random_state=rs)
     gbt.fit(X_train, y_train)
     zB=gbt.predict_proba(X_test)
     y_res=open('y_testGB.csv', 'w')
     y_res.write('\n'.join(str(v[1]) for v in zB))   
+    return zB[:,1]
 #GRADIENT BOOSTING END
 
 #SVC RADIAN KERNEL BEGIN
@@ -103,12 +107,14 @@ def svcRadianKerTest(lC, lGamma, X_tr, X_lt, y_tr, y_lt):
     svc.fit(X_tr, y_tr)
     zs=svc.predict_proba(X_lt)
     print "Rad: "+str(log_loss(y_lt,zs[:,1]))
+    return zs[:,1]
 def svcRadianKerRes(lC, lGamma, X_train, X_test, y_train):
     svc = SVC(kernel='rbf', C=lC, gamma=lGamma, probability=True)
     svc.fit(X_train, y_train)
     zS=svc.predict_proba(X_test)
     y_res=open('y_testSVCRK.csv', 'w')
     y_res.write('\n'.join(str(v[1]) for v in zS))   
+    return zS[:,1]
 #SVC RADIAN KERNEL END
 
 #XGB BEGIN
@@ -123,6 +129,7 @@ def xgboostTest(X_tr, X_lt, y_tr, y_lt, param):
     zg = bst.predict_proba(X_lt)
     #print zg
     print "XGB: "+str(log_loss(y_lt, zg[:,1]))
+    return zg[:,1]
 def xgboostRes(X_train, X_test, y_train, param):
     if (not param):
         param = {'max_depth':4, 'silent':1, 'objective':'binary:logistic'}
@@ -131,7 +138,28 @@ def xgboostRes(X_train, X_test, y_train, param):
     zG = bst.predict_proba(X_test)
     y_res=open('y_testXGB.csv', 'w')
     y_res.write('\n'.join(str(v[1]) for v in zG))      
+    return zG[:,1]
 #XGB END
+
+def GBXGBTest(lab1, lab2, lab_lt):
+    for i in range(len(lab1)):
+        lab1[i]=(lab1[i]+lab2[i]*2)/3.
+    print "GBXGB: "+str(log_loss(lab_lt, lab1))
+def GBXGBRes(lab1, lab2):
+    for i in range(len(lab1)):
+        lab1[i]=(lab1[i]+lab2[i]*2)/3.
+    y_res=open('y_testGBXGB.csv', 'w')
+    y_res.write('\n'.join(str(v) for v in lab1))   
+
+def GBXGBRKTest(lab1, lab2, lab3, lab_lt):
+    for i in range(len(lab1)):
+        lab1[i]=(lab1[i]+lab2[i]*2+lab3[i])/4.
+    print "GBXGBRK: "+str(log_loss(lab_lt, lab1))
+
+def RNDGBXGBTest(lab1, lab2, lab3, lab_lt):
+    for i in range(len(lab1)):
+        lab1[i]=(lab1[i]*3+lab2[i]*5+lab3[i])/9.
+    print "RNDGBXGB: "+str(log_loss(lab_lt, lab1))
 
 def main():
     X_train, y_train, X_test = importTrainData()
@@ -143,14 +171,19 @@ def main():
     #bestneGB, bestrsGB = gboostSearchParam(X_train, y_train)
     bestC, bestG = 100.0, 0.001
     #bestC, bestG = svcRadianKerSearchParam(X_train, y_train)
-    #randomForestTest(bestneRnd, bestrsRnd, X_tr, X_lt, y_tr, y_lt)
-    #gboostTest(bestneGB, bestrsGB, X_tr, X_lt, y_tr, y_lt)
-    #svcRadianKerTest(bestC, bestG, X_tr, X_lt, y_tr, y_lt)
-    #randomForestRes(bestneRnd, bestrsRnd, X_train, X_test, y_train)
-    #gboostRes(bestneGB, bestrsGB,  X_train, X_test, y_train)
-    #svcRadianKerRes(bestC, bestG, X_train, X_test, y_train)
-    xgboostTest(X_tr, X_lt, y_tr, y_lt, {})
-    xgboostRes(X_train, X_test, y_train, {})   
+    zRnd = randomForestTest(bestneRnd, bestrsRnd, X_tr, X_lt, y_tr, y_lt)
+    zGb = gboostTest(bestneGB, bestrsGB, X_tr, X_lt, y_tr, y_lt)
+    zSvc = svcRadianKerTest(bestC, bestG, X_tr, X_lt, y_tr, y_lt)
+    zXgb = xgboostTest(X_tr, X_lt, y_tr, y_lt, {})
+    zRND = randomForestRes(bestneRnd, bestrsRnd, X_train, X_test, y_train)
+    zGB = gboostRes(bestneGB, bestrsGB,  X_train, X_test, y_train)
+    #zSVC = svcRadianKerRes(bestC, bestG, X_train, X_test, y_train)
+    zXGB = xgboostRes(X_train, X_test, y_train, {}) 
+    GBXGBTest(zGb, zXgb, y_lt)
+    GBXGBRes(zGB, zXGB)
+    GBXGBRKTest(zGb, zXgb, zSvc, y_lt) 
+    RNDGBXGBTest(zGb, zXgb, zRnd, y_lt)
+
 main()
 
 '''
