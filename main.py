@@ -69,7 +69,7 @@ def gboostSearchParam(X_train, y_train):
     print 'best rndst = ', grid.best_estimator_.random_state
     bestne=grid.best_estimator_.n_estimators
     bestrs=grid.best_estimator_.random_state
-    return bestne, bestrc
+    return bestne, bestrs
 def gboostTest(ne, rs, X_tr, X_lt, y_tr, y_lt):
     gbt = ensemble.GradientBoostingClassifier(n_estimators=ne, random_state=rs)
     gbt.fit(X_tr, y_tr)
@@ -113,10 +113,10 @@ def main():
     X_train, y_train, X_test = importTrainData()
     X_train, X_test = normalizeData(X_train, X_test)
     X_tr, X_lt, y_tr, y_lt = makeLocalData(X_train, y_train)
-    bestneRnd, bestrsRnd = 100, 22
-    bestneRnd, bestrsRnd = randomForestSearchParam(X_train, y_train)
-    bestneGB, bestrsGB = 100, 13
-    bestneGB, bestrsGB = gboostSearchParam(X_train, y_train)
+    bestneRnd, bestrsRnd = 175, 22
+    #bestneRnd, bestrsRnd = randomForestSearchParam(X_train, y_train)
+    bestneGB, bestrsGB = 100, 16
+    #bestneGB, bestrsGB = gboostSearchParam(X_train, y_train)
     bestC, bestG = 100.0, 0.01
     bestC, bestG = svcRadianKerSearchParam(X_train, y_train)
     randomForestTest(bestneRnd, bestrsRnd, X_tr, X_lt, y_tr, y_lt)
