@@ -32,7 +32,7 @@ def makeLocalData(X_train, y_train):
 #PREPARE DATA END
 
 #RANDOM FOREST BEGIN
-def randomForestSearchParam():
+def randomForestSearchParam(X_train, y_train):
     estim_array = [i for i in range(50, 200, 25)]
     rndst_array = [i for i in range(4, 30, 3)]
     rfc = ensemble.RandomForestClassifier()
@@ -58,7 +58,7 @@ def randomForestRes(ne, rs, X_train, X_test, y_train):
 #RANDOM FOREST END
 
 #GRADIENT BOOSTING BEGIN
-def gboostSearchParam():
+def gboostSearchParam(X_train, y_train):
     estim_array = [i for i in range(50, 200, 10)]
     rndst_array = [i for i in range(4, 30, 2)]
     rfc = ensemble.GradientBoostingClassifier()
@@ -84,7 +84,7 @@ def gboostRes(ne, rs, X_train, X_test, y_train):
 #GRADIENT BOOSTING END
 
 #SVC RADIAN KERNEL BEGIN
-def svcRadianKerSearchParam():
+def svcRadianKerSearchParam(X_train, y_train):
     C_array = np.logspace(-3, 3, num=7)
     gamma_array = np.logspace(-5, 2, num=8)
     svc = SVC(kernel='rbf', probability=True)
@@ -113,12 +113,18 @@ def main():
     X_train, y_train, X_test = importTrainData()
     X_train, X_test = normalizeData(X_train, X_test)
     X_tr, X_lt, y_tr, y_lt = makeLocalData(X_train, y_train)
-    randomForestTest(100, 22, X_tr, X_lt, y_tr, y_lt)
-    gboostTest(100, 22, X_tr, X_lt, y_tr, y_lt)
-    asvcRadianKerTest(100.0, 0.01, X_tr, X_lt, y_tr, y_lt)
-    randomForestRes(100, 22, X_train, X_test, y_train)
-    gboostRes(100, 22,  X_train, X_test, y_train)
-    svcRadianKerRes(100.0, 0.01, X_train, X_test, y_train)
+    bestneRnd, bestrsRnd = 100, 22
+    #bestneRnd, bestrsRnd = randomForestSearchParam(X_train, y_train)
+    bestneGB, bestrsGB = 100, 13
+    #bestneGB, bestrsGB = randomForestSearchParam(X_train, y_train)
+    bestC, bestG = 100.0, 0.01
+    #bestC, bestG = svcRadianKerSearchParam(X_train, y_train)
+    randomForestTest(bestneRnd, bestrsRnd, X_tr, X_lt, y_tr, y_lt)
+    gboostTest(bestneGB, bestrsGB, X_tr, X_lt, y_tr, y_lt)
+    svcRadianKerTest(bestC, bestG, X_tr, X_lt, y_tr, y_lt)
+    randomForestRes(bestneRnd, bestrsRnd, X_train, X_test, y_train)
+    gboostRes(bestneGB, bestrsGB,  X_train, X_test, y_train)
+    svcRadianKerRes(bestC, bestG, X_train, X_test, y_train)
     
 main()
 
