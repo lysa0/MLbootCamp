@@ -2,11 +2,13 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt 
 import scipy as sp
+from xgboost.sklearn import XGBClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import log_loss
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 from sklearn import ensemble
+
 
 def logloss(act, pred):
     epsilon = 1e-15
@@ -33,8 +35,8 @@ def makeLocalData(X_train, y_train):
 
 #RANDOM FOREST BEGIN
 def randomForestSearchParam(X_train, y_train):
-    estim_array = [i for i in range(50, 200, 25)]
-    rndst_array = [i for i in range(4, 30, 3)]
+    estim_array = [i for i in range(100, 200, 10)]
+    rndst_array = [i for i in range(7, 30, 4)]
     rfc = ensemble.RandomForestClassifier()
     grid = GridSearchCV(rfc, param_grid={'n_estimators': estim_array, 'random_state': rndst_array}, scoring='neg_log_loss')
     grid.fit(X_train, y_train)
@@ -59,8 +61,8 @@ def randomForestRes(ne, rs, X_train, X_test, y_train):
 
 #GRADIENT BOOSTING BEGIN
 def gboostSearchParam(X_train, y_train):
-    estim_array = [i for i in range(50, 200, 10)]
-    rndst_array = [i for i in range(4, 30, 2)]
+    estim_array = [i for i in range(100, 200, 15)]
+    rndst_array = [i for i in range(7, 30, 4)]
     rfc = ensemble.GradientBoostingClassifier()
     grid = GridSearchCV(rfc, param_grid={'n_estimators': estim_array, 'random_state': rndst_array}, scoring='neg_log_loss')
     grid.fit(X_train, y_train)
@@ -85,8 +87,8 @@ def gboostRes(ne, rs, X_train, X_test, y_train):
 
 #SVC RADIAN KERNEL BEGIN
 def svcRadianKerSearchParam(X_train, y_train):
-    C_array = np.logspace(-3, 3, num=7)
-    gamma_array = np.logspace(-5, 2, num=8)
+    C_array = np.logspace(-3, 3, num=10)
+    gamma_array = np.logspace(-5, 2, num=10)
     svc = SVC(kernel='rbf', probability=True)
     grid = GridSearchCV(svc, param_grid={'C': C_array, 'gamma': gamma_array}, scoring='neg_log_loss')
     grid.fit(X_train, y_train)
@@ -100,14 +102,36 @@ def svcRadianKerTest(lC, lGamma, X_tr, X_lt, y_tr, y_lt):
     svc = SVC(kernel='rbf', C=lC, gamma=lGamma, probability=True)
     svc.fit(X_tr, y_tr)
     zs=svc.predict_proba(X_lt)
-    print "Rad: "+str(logloss(y_lt,zs[:,1]))
+    print "Rad: "+str(log_loss(y_lt,zs[:,1]))
 def svcRadianKerRes(lC, lGamma, X_train, X_test, y_train):
     svc = SVC(kernel='rbf', C=lC, gamma=lGamma, probability=True)
     svc.fit(X_train, y_train)
     zS=svc.predict_proba(X_test)
     y_res=open('y_testSVCRK.csv', 'w')
     y_res.write('\n'.join(str(v[1]) for v in zS))   
-#SVC RADIAN KERNEK END
+#SVC RADIAN KERNEL END
+
+#XGB BEGIN
+def xgboostSearchParam():
+    bestParam={}
+    return bestParam
+def xgboostTest(X_tr, X_lt, y_tr, y_lt, param):
+    if (not param):
+        param = {'max_depth':4,'silent':1, 'objective':'binary:logistic'}
+    bst = XGBClassifier(**param)
+    bst.fit(X_tr, y_tr)
+    zg = bst.predict_proba(X_lt)
+    #print zg
+    print "XGB: "+str(log_loss(y_lt, zg[:,1]))
+def xgboostRes(X_train, X_test, y_train, param):
+    if (not param):
+        param = {'max_depth':4, 'silent':1, 'objective':'binary:logistic'}
+    bst = XGBClassifier(**param)
+    bst.fit(X_train, y_train)
+    zG = bst.predict_proba(X_test)
+    y_res=open('y_testXGB.csv', 'w')
+    y_res.write('\n'.join(str(v[1]) for v in zG))      
+#XGB END
 
 def main():
     X_train, y_train, X_test = importTrainData()
@@ -117,15 +141,16 @@ def main():
     #bestneRnd, bestrsRnd = randomForestSearchParam(X_train, y_train)
     bestneGB, bestrsGB = 100, 16
     #bestneGB, bestrsGB = gboostSearchParam(X_train, y_train)
-    bestC, bestG = 100.0, 0.01
-    bestC, bestG = svcRadianKerSearchParam(X_train, y_train)
-    randomForestTest(bestneRnd, bestrsRnd, X_tr, X_lt, y_tr, y_lt)
-    gboostTest(bestneGB, bestrsGB, X_tr, X_lt, y_tr, y_lt)
-    svcRadianKerTest(bestC, bestG, X_tr, X_lt, y_tr, y_lt)
-    randomForestRes(bestneRnd, bestrsRnd, X_train, X_test, y_train)
-    gboostRes(bestneGB, bestrsGB,  X_train, X_test, y_train)
-    svcRadianKerRes(bestC, bestG, X_train, X_test, y_train)
-    
+    bestC, bestG = 100.0, 0.001
+    #bestC, bestG = svcRadianKerSearchParam(X_train, y_train)
+    #randomForestTest(bestneRnd, bestrsRnd, X_tr, X_lt, y_tr, y_lt)
+    #gboostTest(bestneGB, bestrsGB, X_tr, X_lt, y_tr, y_lt)
+    #svcRadianKerTest(bestC, bestG, X_tr, X_lt, y_tr, y_lt)
+    #randomForestRes(bestneRnd, bestrsRnd, X_train, X_test, y_train)
+    #gboostRes(bestneGB, bestrsGB,  X_train, X_test, y_train)
+    #svcRadianKerRes(bestC, bestG, X_train, X_test, y_train)
+    xgboostTest(X_tr, X_lt, y_tr, y_lt, {})
+    xgboostRes(X_train, X_test, y_train, {})   
 main()
 
 '''
