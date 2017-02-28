@@ -153,13 +153,33 @@ def GBXGBRes(lab1, lab2):
 
 def GBXGBRKTest(lab1, lab2, lab3, lab_lt):
     for i in range(len(lab1)):
-        lab1[i]=(lab1[i]+lab2[i]*2+lab3[i])/4.
+        lab1[i]=(lab1[i]+4*lab2[i]+lab3[i])/6.
     print "GBXGBRK: "+str(log_loss(lab_lt, lab1))
-
+def GBXGBRKRes(lab1, lab2, lab3):
+    for i in range(len(lab1)):
+        lab1[i]=(lab1[i]+4*lab2[i]+lab3[i])/6.
+    y_res=open('y_testGBXGBRK.csv', 'w')
+    y_res.write('\n'.join(str(v) for v in lab1))   
+    
 def RNDGBXGBTest(lab1, lab2, lab3, lab_lt):
     for i in range(len(lab1)):
-        lab1[i]=(lab1[i]*3+lab2[i]*5+lab3[i])/9.
+        lab1[i]=(lab1[i]+3*lab2[i]+5*lab3[i])/9.
     print "RNDGBXGB: "+str(log_loss(lab_lt, lab1))
+def RNDGBXGBRes(lab1, lab2, lab3):
+    for i in range(len(lab1)):
+        lab1[i]=(lab1[i]+3*lab2[i]+5*lab3[i])/9.
+    y_res=open('y_testRNDGBXGB.csv', 'w')
+    y_res.write('\n'.join(str(v) for v in lab1))   
+
+def RNDGBXGBRKTest(lab1, lab2, lab3, lab4, lab_lt):
+    for i in range(len(lab1)):
+        lab1[i]=(lab1[i]+6*lab2[i]+10*lab3[i]+5*lab4[i])/22.
+    print "RNDGBXGBRK: "+str(log_loss(lab_lt, lab1))
+def RNDGBXGBRKRes(lab1, lab2, lab3, lab4):
+    for i in range(len(lab1)):
+        lab1[i]=(lab1[i]+6*lab2[i]+10*lab3[i]+5*lab4[i])/22.
+    y_res=open('y_testRNDGBXGBKR.csv', 'w')
+    y_res.write('\n'.join(str(v) for v in lab1))   
 
 def main():
     X_train, y_train, X_test = importTrainData()
@@ -182,7 +202,8 @@ def main():
     GBXGBTest(zGb, zXgb, y_lt)
     GBXGBRes(zGB, zXGB)
     GBXGBRKTest(zGb, zXgb, zSvc, y_lt) 
-    RNDGBXGBTest(zGb, zXgb, zRnd, y_lt)
+    RNDGBXGBTest(zRnd, zGb, zXgb, y_lt)
+    RNDGBXGBRKTest(zRnd, zGb, zXgb, zSvc, y_lt)
 
 main()
 
