@@ -8,7 +8,11 @@ from sklearn.metrics import log_loss
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVC
 from sklearn import ensemble
-
+from keras.preprocessing import sequence
+from keras.models import Sequential
+from keras.layers import Dense, Activation, Embedding
+from keras.layers import LSTM
+from keras.layers.core import Reshape
 
 def logloss(act, pred):
     epsilon = 1e-15
@@ -20,9 +24,9 @@ def logloss(act, pred):
 
 #PREPARE DATA BEGIN
 def importTrainData():
-    X_train = pd.read_csv('x_train.csv', delimiter=';')
+    X_train = pd.read_csv('x_train.csv', delimiter=';', header=0)
     y_train=pd.read_csv('y_train.csv', header=None)[0]
-    X_test=pd.read_csv('x_test.csv', delimiter=';')
+    X_test=pd.read_csv('x_test.csv', delimiter=';', header=0)
     return X_train, y_train, X_test
 def normalizeData(X_train, X_test):
     X_train = (X_train - X_train.mean()) / X_train.std()
@@ -181,31 +185,64 @@ def RNDGBXGBRKRes(lab1, lab2, lab3, lab4):
     y_res=open('y_testRNDGBXGBKR.csv', 'w')
     y_res.write('\n'.join(str(v) for v in lab1))   
 
+def LSTMTest(X_train, X_test, y_train, y_test):
+    X_train, X_test, y_train, y_test = X_train.as_matrix(), X_test.as_matrix(), y_train.as_matrix(), y_test.as_matrix()
+    model = Sequential()
+    model.add(Dense(32, input_shape=(12,)))
+    model.add(Reshape((8,4)))
+    model.add(LSTM(32, dropout_W=0.2, dropout_U=0.2))
+    model.add(Dense(1, activation="sigmoid"))
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.fit(X_train, y_train, nb_epoch=19, validation_data=(X_test, y_test))
+    scores = model.evaluate(X_test, y_test)
+    print scores
+    #for i in range(5):
+    #    print ": %.2f%%" % (scores[i]*100)
+    return scores
+
+def LSTMRes(X_train, X_test, y_train):
+    X_train, X_test, y_train = X_train.as_matrix(), X_test.as_matrix(), y_train.as_matrix()
+    model = Sequential()
+    model.add(Dense(32, input_shape=(12,)))
+    model.add(Reshape((8,4)))
+    model.add(LSTM(32, dropout_W=0.2, dropout_U=0.2))
+    model.add(Dense(1, activation="sigmoid"))
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.fit(X_train, y_train, nb_epoch=11)# validation_data=(X_test, y_test))    zLSMT = model.predict_proba(X_test)
+    zLSMT = model.predict_proba(X_test)
+    y_res=open('y_testLSTM.csv', 'w')
+    y_res.write('\n'.join(str(v[0]) for v in zLSMT))  
+    return zLSMT
+
 def main():
+    np.random.seed(42)
     X_train, y_train, X_test = importTrainData()
     X_train, X_test = normalizeData(X_train, X_test)
     X_tr, X_lt, y_tr, y_lt = makeLocalData(X_train, y_train)
     bestneRnd, bestrsRnd = 175, 22
-    bestneRnd, bestrsRnd = randomForestSearchParam(X_train, y_train)
+    #bestneRnd, bestrsRnd = randomForestSearchParam(X_train, y_train)
     bestneGB, bestrsGB = 100, 16
-    bestneGB, bestrsGB = gboostSearchParam(X_train, y_train)
+    #bestneGB, bestrsGB = gboostSearchParam(X_train, y_train)
     bestC, bestG = 100.0, 0.001
-    bestC, bestG = svcRadianKerSearchParam(X_train, y_train)
-    zRnd = randomForestTest(bestneRnd, bestrsRnd, X_tr, X_lt, y_tr, y_lt)
-    zGb = gboostTest(bestneGB, bestrsGB, X_tr, X_lt, y_tr, y_lt)
-    zSvc = svcRadianKerTest(bestC, bestG, X_tr, X_lt, y_tr, y_lt)
-    zXgb = xgboostTest(X_tr, X_lt, y_tr, y_lt, {})
-    zRND = randomForestRes(bestneRnd, bestrsRnd, X_train, X_test, y_train)
-    zGB = gboostRes(bestneGB, bestrsGB,  X_train, X_test, y_train)
-    zSVC = svcRadianKerRes(bestC, bestG, X_train, X_test, y_train)
-    zXGB = xgboostRes(X_train, X_test, y_train, {}) 
-    GBXGBTest(zGb, zXgb, y_lt)
-    GBXGBRes(zGB, zXGB)
-    GBXGBRKTest(zGb, zXgb, zSvc, y_lt) 
-    GBXGBRKRes(zGB, zXGB, zSVC) 
-    RNDGBXGBTest(zRnd, zGb, zXgb, y_lt)
-    RNDGBXGBRes(zRND, zGB, zXGB)
-    RNDGBXGBRKTest(zRnd, zGb, zXgb, zSvc, y_lt)
-    RNDGBXGBRKRes(zRND, zGB, zXGB, zSVC)
+    print X_train.shape
+    #bestC, bestG = svcRadianKerSearchParam(X_train, y_train)
+    #zRnd = randomForestTest(bestneRnd, bestrsRnd, X_tr, X_lt, y_tr, y_lt)
+    #zGb = gboostTest(bestneGB, bestrsGB, X_tr, X_lt, y_tr, y_lt)
+    #zSvc = svcRadianKerTest(bestC, bestG, X_tr, X_lt, y_tr, y_lt)
+    #zXgb = xgboostTest(X_tr, X_lt, y_tr, y_lt, {})
+    #zRND = randomForestRes(bestneRnd, bestrsRnd, X_train, X_test, y_train)
+    #zGB = gboostRes(bestneGB, bestrsGB,  X_train, X_test, y_train)
+    #zSVC = svcRadianKerRes(bestC, bestG, X_train, X_test, y_train)
+    #zXGB = xgboostRes(X_train, X_test, y_train, {}) 
+    #GBXGBTest(zGb, zXgb, y_lt)
+    #GBXGBRes(zGB, zXGB)
+    #GBXGBRKTest(zGb, zXgb, zSvc, y_lt) 
+    #GBXGBRKRes(zGB, zXGB, zSVC) 
+    #RNDGBXGBTest(zRnd, zGb, zXgb, y_lt)
+    #RNDGBXGBRes(zRND, zGB, zXGB)
+    #RNDGBXGBRKTest(zRnd, zGb, zXgb, zSvc, y_lt)
+    #RNDGBXGBRKRes(zRND, zGB, zXGB, zSVC)
+    #LSTMt = LSTMTest(X_tr, X_lt, y_tr, y_lt)   
+    LSTMr = LSTMRes(X_train, X_test, y_train)
 
 main()
